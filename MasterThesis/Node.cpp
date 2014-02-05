@@ -3,11 +3,12 @@
 #include "Node.h"
 #include <assert.h>
 
-Node *Node_Create(int textIndex)
+Node *Node_Create(int arrayIndex, int textIndex)
 {
 	struct Node *node = (Node*) malloc(sizeof(struct Node));
 	assert (node != NULL);
 
+	node->arrayIndex = arrayIndex;
 	node->textIndex = textIndex;
 	node->edges = (int*) malloc(128 * sizeof(int));
 	node->from = (unsigned*) malloc(128 * sizeof(unsigned));
