@@ -37,7 +37,7 @@ Edge *FindEdge(Node *n, int k);
 Node *CreateNewNode(int textIndex);
 Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex);
 void Canonize(Node *n, int *k, int *p);
-void UpdateTree(Node *s, int *k, int *p);
+void UpdateTree(Node *s, int *k, int p);
 
 void InitTree()
 {
@@ -148,14 +148,13 @@ void Canonize(Node *n, int *k, int p)
 void ConstructSTree(char* str)
 {
 	Node* s = nodes[root];
-	int k = 0;
+	int *k = 0;
 	int i = -1;
 
 	for (int i = 0; str[i] != '\0'; i++)
 	{
-		i++;
-		int charHash = (int) str[i];
-		printf("%c", str[i]);
+		currentEnd = i;
+		UpdateTree(s, k, currentEnd);
 	}
 	return;
 }
@@ -208,37 +207,37 @@ Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex)
 	return newEdge;
 }
 
-void UpdateTree(Node *s, int *k, int *p)
+void UpdateTree(Node *s, int *k, int p)
 {
 	/*(s, (k, p-1)) is the canonical reference pair for the active point*/
-	char c = text[*p];
+	char c = text[p];
 	Node *oldr = NULL;
 	
-	while(!CheckEndPoint(s, *k, (*p) - 1, c))
+	while(!CheckEndPoint(s, *k, p - 1, c))
 	{
 		Node *r = NULL;
 		/*implicit case*/
-		if(k <= (p-1))
-			r = nodes[SplitEdge(s, *k, (*p) - 1)];
+		if(*k <= (p-1))
+			r = nodes[SplitEdge(s, *k, p - 1)];
 		/*explicit case*/
 		else
 			r = s;
 
-		Node *newNode = CreateNewNode((*p) - 1);
-		Edge *e = CreateNewEdge(*p, currentEnd, newNode->arrayIndex);
-		SetEdge(r, (int) text[*p], e->arrayIndex);
+		Node *newNode = CreateNewNode(p - 1);
+		Edge *e = CreateNewEdge(p, currentEnd, newNode->arrayIndex);
+		SetEdge(r, (int) text[p], e->arrayIndex);
 
 		if(oldr != NULL)
 			SetSuffix(oldr->arrayIndex, r->arrayIndex);
 
 		oldr = r;
 
-		Canonize(nodes[suffixPointers[s->arrayIndex]], k, *p - 1);
+		Canonize(nodes[suffixPointers[s->arrayIndex]], k, p - 1);
 	}
 	if(oldr != NULL)
 		SetSuffix(oldr->arrayIndex, s->arrayIndex);
 
-	Canonize(s, k, *p);
+	Canonize(s, k, p);
 }
 
 int main(int argc, char *argv[])
