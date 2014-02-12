@@ -30,6 +30,9 @@
     <ClInclude Include="Edge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NodeEdge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -42,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Edge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeEdge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

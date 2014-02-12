@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <string.h>
 #include "Node.h"
+#include "NodeEdge.h"
 #include "Edge.h"
 #define INITIAL_ARRAY_SIZE 1024
 
@@ -21,8 +22,13 @@ int *suffixPointers;
 unsigned *from;
 unsigned *to;
 unsigned top;
+
+NodeEdge **nodeEdges;
+int nodeEdgesCount;
+
 int freeNodeIndex;
 int freeEdgeIndex;
+int freeNodeEdgeIndex;
 int currentEnd = 0;
 
 int initVal = -1;
@@ -48,7 +54,7 @@ void InitTree()
 	nodes = (Node**) malloc(INITIAL_ARRAY_SIZE * sizeof(Node));
 	nodes[0] = Node_Create(0, -1);
 	nodes[1] = Node_Create(1, -1);
-	int a = nodes[1]->edges[0];
+	//int a = nodes[1]->edges[0];
 	freeNodeIndex = 2;
 
 	suffixPointers = (int*) malloc(INITIAL_ARRAY_SIZE * (sizeof(int)));
@@ -60,27 +66,34 @@ void InitTree()
 
 	edges = (Edge**) malloc(INITIAL_ARRAY_SIZE * sizeof(Edge));
 	edgesCount = INITIAL_ARRAY_SIZE;
+	freeEdgeIndex = 0;
+
+	nodeEdges = (NodeEdge**) malloc(INITIAL_ARRAY_SIZE * sizeof(NodeEdge));
+	nodeEdgesCount = INITIAL_ARRAY_SIZE;
+	freeNodeEdgeIndex = 0;
+
 	return;
 }
 
 int CheckEdgeExist(Node *node, int charHash)
 {
-	if (node->from[charHash] < node->top && node->to[node->from[charHash]] == charHash)
+	/*if (node->from[charHash] < node->top && node->to[node->from[charHash]] == charHash)
 		return node->edges[charHash];
 	else
 	{
 		SetEdge(node, charHash, initVal);
 
 		return node->edges[charHash];
-	}
+	}*/
+	return 0;
 }
 
 void SetEdge(Node *node, int charHash, int val)
 {
-	node->from[charHash] = node->top;
+	/*node->from[charHash] = node->top;
 	node->to[node->top] = charHash;
 	node->edges[charHash] = val;
-	node->top++;
+	node->top++;*/
 }
 
 int CheckSuffixExist(int index)
@@ -105,8 +118,8 @@ void SetSuffix(int index, int val)
 
 Edge *FindEdge(Node *n, int k)
 {
-	Edge *e = edges[n->edges[(int) text[k]]];
-	
+	//Edge *e = edges[n->edges[(int) text[k]]];
+	Edge *e = Edge_Create(0,0,0,0);
 	return e;
 }
 
@@ -195,6 +208,14 @@ Node *CreateNewNode(int textIndex)
 	nodes[freeNodeIndex] = newNode;
 	freeNodeIndex++;
 
+	if(freeNodeIndex == nodesCount)
+	{
+		nodesCount *=2;
+		Node **temp =(Node**) realloc(nodes, sizeof(nodesCount));
+		if(temp != NULL)
+			nodes = temp;
+	}
+
 	return newNode;
 }
 
@@ -203,6 +224,14 @@ Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex)
 	Edge *newEdge = Edge_Create(freeEdgeIndex, startIndex, endIndex, nodeIndex);
 	edges[freeEdgeIndex] = newEdge;
 	freeEdgeIndex++;
+
+	if(freeEdgeIndex == edgesCount)
+	{
+		edgesCount *=2;
+		Edge **temp =(Edge**) realloc(edges, sizeof(edgesCount));
+		if(temp != NULL)
+			edges = temp;
+	}
 
 	return newEdge;
 }
@@ -242,10 +271,6 @@ void UpdateTree(Node *s, int *k, int p)
 
 int main(int argc, char *argv[])
 {
-	/*printf("%d\n", sizeof(Edge));
-	printf("%d\n", sizeof(Edge*));
-	printf("%d\n", sizeof(Node));
-	printf("%d\n", sizeof(Node*));*/
 	InitTree();
 	text = "cocoa";
 	ConstructSTree(text);
