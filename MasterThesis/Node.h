@@ -12,5 +12,5 @@ struct Node{
 };
 typedef struct Node Node;
 
-Node *Node_Create(int arrayIndex, int textIndex);
+Node *Node_Create(int arrayIndex, int textIndex, int edgeStartIndex);
 #endif

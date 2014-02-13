@@ -47,12 +47,13 @@ void UpdateTree(Node *s, int *k, int p);
 
 void InitTree()
 {
-	/*auxiliary = 0;
-	root = 1;*/
+	auxiliary = 0;
+	root = 1;
 	nodesCount = INITIAL_ARRAY_SIZE;
 	nodes = (Node**) malloc(INITIAL_ARRAY_SIZE * sizeof(Node));
-	nodes[0] = Node_Create(0, -1);
-	nodes[1] = Node_Create(1, -1);
+	//Don't really need to set an edge from the auxiliary state to the root.
+	nodes[0] = Node_Create(0, -1, -1);
+	nodes[1] = Node_Create(1, -1, -1);
 	//int a = nodes[1]->edges[0];
 	freeNodeIndex = 2;
 
@@ -97,11 +98,18 @@ int CheckEdgeExist(Node *node, char c)
 
 void SetEdge(Node *node, char c, int val)
 {
-	//TODO: Check Edge exists.
 	nodeEdges[freeNodeEdgeIndex] = NodeEdge_Create(c, val);
 	node->lastEdgeIndex = freeNodeEdgeIndex;
 	freeNodeEdgeIndex++;
+	
+	if(freeNodeEdgeIndex == nodeEdgesCount)
+	{
+		nodeEdgesCount *=2;
+		NodeEdge **temp = (NodeEdge**) realloc(nodeEdges, nodeEdgesCount * sizeof(NodeEdge));
 
+		if(temp != NULL)
+			nodeEdges = temp;
+	}
 
 }
 
@@ -170,13 +178,12 @@ void Canonize(Node *n, int *k, int p)
 void ConstructSTree(char* str)
 {
 	Node* s = nodes[root];
-	int *k = 0;
-	int i = -1;
+	int k = 0;
 
 	for (int i = 0; str[i] != '\0'; i++)
 	{
 		currentEnd = i;
-		UpdateTree(s, k, currentEnd);
+		UpdateTree(s, &k, currentEnd);
 	}
 	return;
 }
@@ -213,14 +220,14 @@ int SplitEdge(Node *s, int k, int p)
 
 Node *CreateNewNode(int textIndex)
 {
-	Node *newNode = Node_Create(freeNodeIndex, textIndex);
+	Node *newNode = Node_Create(freeNodeIndex, textIndex, freeNodeEdgeIndex);
 	nodes[freeNodeIndex] = newNode;
 	freeNodeIndex++;
 
 	if(freeNodeIndex == nodesCount)
 	{
 		nodesCount *=2;
-		Node **temp =(Node**) realloc(nodes, sizeof(nodesCount));
+		Node **temp =(Node**) realloc(nodes, nodesCount * sizeof(Node));
 		if(temp != NULL)
 			nodes = temp;
 	}
@@ -237,7 +244,7 @@ Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex)
 	if(freeEdgeIndex == edgesCount)
 	{
 		edgesCount *=2;
-		Edge **temp =(Edge**) realloc(edges, sizeof(edgesCount));
+		Edge **temp =(Edge**) realloc(edges, edgesCount * sizeof(Edge));
 		if(temp != NULL)
 			edges = temp;
 	}
@@ -261,7 +268,7 @@ void UpdateTree(Node *s, int *k, int p)
 		else
 			r = s;
 
-		Node *newNode = CreateNewNode(p - 1);
+		Node *newNode = CreateNewNode(p);
 		Edge *e = CreateNewEdge(p, currentEnd, newNode->arrayIndex);
 		SetEdge(r, text[p], e->arrayIndex);
 
