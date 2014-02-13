@@ -34,12 +34,12 @@ int currentEnd = 0;
 int initVal = -1;
 void InitTree();
 void ConstructSTree(char* str);
-int CheckEdgeExist(Node *node, char c);
+int CheckEdgeExist(Node *node, char c, int *index);
 void SetEdge(Node *n, char c, int val);
 int CheckSuffixExist(int index);
 void SetSuffix(int index, int val);
 int CheckEndPoint(Node *node, int k, int p, char c);
-Edge *FindEdge(Node *n, int k);
+//Edge *FindEdge(Node *n, int k);
 Node *CreateNewNode(int textIndex);
 Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex);
 void Canonize(Node *n, int *k, int *p);
@@ -75,8 +75,12 @@ void InitTree()
 	return;
 }
 
-int CheckEdgeExist(Node *node, char c)
+int CheckEdgeExist(Node *node, char c, int *index)
 {
+	//If this is the auxiliary state, a transition exists.
+	if(node->arrayIndex == 0)
+		return 1;
+
 	int edgeIndex = node->edgeStartIndex;
 	if(edgeIndex < 0)
 		return 0;
@@ -85,7 +89,10 @@ int CheckEdgeExist(Node *node, char c)
 	{
 		NodeEdge* ne = nodeEdges[edgeIndex];
 		if(ne->symbol == c)
+		{
+			(*index) = edgeIndex;
 			return 1;
+		}
 		
 		if(ne->nextElement < 0)
 			break;
@@ -133,19 +140,20 @@ void SetSuffix(int index, int val)
 	top++;
 }
 
-Edge *FindEdge(Node *n, int k)
-{
-	//Edge *e = edges[n->edges[(int) text[k]]];
-	Edge *e = Edge_Create(0,0,0,0);
-	return e;
-}
+//Edge *FindEdge(Node *n, int k)
+//{
+//	//Edge *e = edges[n->edges[(int) text[k]]];
+//	Edge *e = Edge_Create(0,0,0,0);
+//	return e;
+//}
 
 //explicit parent? canonical reference point. we only need such pair for active point?
 int CheckEndPoint(Node *node, int k, int p, char c)
 {
 	if(k<=p)
 	{
-		Edge *e = FindEdge(node, k);
+		int edgeIndex = 0;
+		Edge *e = edges[CheckEdgeExist(node, text[k], &edgeIndex)];
 		int start = e->startIndex;
 		if(c == text[start + p - k + 1])
 			return 1;
@@ -154,7 +162,8 @@ int CheckEndPoint(Node *node, int k, int p, char c)
 	}
 	else
 	{
-		return CheckEdgeExist(node, c) != -1 ? 0 : 1;
+		int index = -1;
+		return CheckEdgeExist(node, c, &index);
 	}
 }
 
@@ -162,16 +171,17 @@ void Canonize(Node *n, int *k, int p)
 {
 	if(*k > p) return; /*explicit case*/
 
-	Edge *e = FindEdge(n, *k);
+	int edgeIndex = 0;
+	Edge *e = edges[CheckEdgeExist(n, text[(*k)], &edgeIndex)];
 	int start = e->startIndex;
 	int end = e->endIndex;
 
-	while((end - start) <= (p - *k))
+	while((end - start) <= (p - (*k)))
 	{
-		*k = *k + end - start + 1;
+		*k = (*k) + end - start + 1;
 		n = nodes[e->nodeIndex];
 		if(*k <= p)
-			e = FindEdge(n, *k);
+			e = edges[CheckEdgeExist(n, text[(*k)], &edgeIndex)];
 	}
 }
 
@@ -192,7 +202,8 @@ void ConstructSTree(char* str)
 int SplitEdge(Node *s, int k, int p)
 {
 	char c = text[k];
-	int edgeIndex = CheckEdgeExist(s, c);
+	int edgeIndex = -1;
+	CheckEdgeExist(s, c, &edgeIndex);
 
 	//let (s, (k', p'), s') be the w[k]-edge from s
 	Edge *e = edges[edgeIndex];
@@ -276,11 +287,17 @@ void UpdateTree(Node *s, int *k, int p)
 			SetSuffix(oldr->arrayIndex, r->arrayIndex);
 
 		oldr = r;
-
-		Canonize(nodes[suffixPointers[s->arrayIndex]], k, p - 1);
+		s = nodes[suffixPointers[s->arrayIndex]];
+		Canonize(s, k, p - 1);
 	}
+	
 	if(oldr != NULL)
-		SetSuffix(oldr->arrayIndex, s->arrayIndex);
+	{
+		//If the suffix is not already set, do it.
+		int index = oldr->arrayIndex;
+		if(!(from[index] < top && to[from[index]] == index))
+			SetSuffix(index, s->arrayIndex);
+	}
 
 	Canonize(s, k, p);
 }
