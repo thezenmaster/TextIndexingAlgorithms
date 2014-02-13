@@ -10,6 +10,9 @@ Node *Node_Create(int arrayIndex, int textIndex)
 
 	node->arrayIndex = arrayIndex;
 	node->textIndex = textIndex;
+	node->numberofEdges = 0;
+	node->edgeStartIndex = -1;
+	node->lastEdgeIndex = -1;
 
 	return node;
 }

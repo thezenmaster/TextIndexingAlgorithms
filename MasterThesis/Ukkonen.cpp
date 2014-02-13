@@ -34,8 +34,8 @@ int currentEnd = 0;
 int initVal = -1;
 void InitTree();
 void ConstructSTree(char* str);
-int CheckEdgeExist(Node *node, int charHash);
-void SetEdge(Node *n, int charHash, int val);
+int CheckEdgeExist(Node *node, char c);
+void SetEdge(Node *n, char c, int val);
 int CheckSuffixExist(int index);
 void SetSuffix(int index, int val);
 int CheckEndPoint(Node *node, int k, int p, char c);
@@ -47,9 +47,8 @@ void UpdateTree(Node *s, int *k, int p);
 
 void InitTree()
 {
-
-	auxiliary = 0;
-	root = 1;
+	/*auxiliary = 0;
+	root = 1;*/
 	nodesCount = INITIAL_ARRAY_SIZE;
 	nodes = (Node**) malloc(INITIAL_ARRAY_SIZE * sizeof(Node));
 	nodes[0] = Node_Create(0, -1);
@@ -61,7 +60,7 @@ void InitTree()
 	from = (unsigned*) malloc(INITIAL_ARRAY_SIZE * (sizeof(unsigned)));
 	to = (unsigned*) malloc(INITIAL_ARRAY_SIZE * (sizeof(unsigned)));
 	top = 0;
-	//suffixPointers[1] = 0;
+	suffixPointers[1] = 0;
 	SetSuffix(1, 0);
 
 	edges = (Edge**) malloc(INITIAL_ARRAY_SIZE * sizeof(Edge));
@@ -75,25 +74,35 @@ void InitTree()
 	return;
 }
 
-int CheckEdgeExist(Node *node, int charHash)
+int CheckEdgeExist(Node *node, char c)
 {
-	/*if (node->from[charHash] < node->top && node->to[node->from[charHash]] == charHash)
-		return node->edges[charHash];
-	else
-	{
-		SetEdge(node, charHash, initVal);
+	int edgeIndex = node->edgeStartIndex;
+	if(edgeIndex < 0)
+		return 0;
 
-		return node->edges[charHash];
-	}*/
+	for (int i = 0; i < node->numberofEdges; i++)
+	{
+		NodeEdge* ne = nodeEdges[edgeIndex];
+		if(ne->symbol == c)
+			return 1;
+		
+		if(ne->nextElement < 0)
+			break;
+		else
+			edgeIndex = ne->nextElement;
+	}
+	//Set Edge??
 	return 0;
 }
 
-void SetEdge(Node *node, int charHash, int val)
+void SetEdge(Node *node, char c, int val)
 {
-	/*node->from[charHash] = node->top;
-	node->to[node->top] = charHash;
-	node->edges[charHash] = val;
-	node->top++;*/
+	//TODO: Check Edge exists.
+	nodeEdges[freeNodeEdgeIndex] = NodeEdge_Create(c, val);
+	node->lastEdgeIndex = freeNodeEdgeIndex;
+	freeNodeEdgeIndex++;
+
+
 }
 
 int CheckSuffixExist(int index)
@@ -137,7 +146,7 @@ int CheckEndPoint(Node *node, int k, int p, char c)
 	}
 	else
 	{
-		return CheckEdgeExist(node, (int) c) != -1 ? 0 : 1;
+		return CheckEdgeExist(node, c) != -1 ? 0 : 1;
 	}
 }
 
@@ -176,7 +185,7 @@ void ConstructSTree(char* str)
 int SplitEdge(Node *s, int k, int p)
 {
 	char c = text[k];
-	int edgeIndex = CheckEdgeExist(s, (int) c);
+	int edgeIndex = CheckEdgeExist(s, c);
 
 	//let (s, (k', p'), s') be the w[k]-edge from s
 	Edge *e = edges[edgeIndex];
@@ -197,7 +206,7 @@ int SplitEdge(Node *s, int k, int p)
 	Edge* newEdge = CreateNewEdge(newStart, end, endNodeIndex);
 
 	//r->edges[(char) text[newStart]] = newEdge->arrayIndex;
-	SetEdge(r, (int) text[newStart], newEdge->arrayIndex);
+	SetEdge(r, text[newStart], newEdge->arrayIndex);
 
 	return r->arrayIndex;
 }
@@ -254,7 +263,7 @@ void UpdateTree(Node *s, int *k, int p)
 
 		Node *newNode = CreateNewNode(p - 1);
 		Edge *e = CreateNewEdge(p, currentEnd, newNode->arrayIndex);
-		SetEdge(r, (int) text[p], e->arrayIndex);
+		SetEdge(r, text[p], e->arrayIndex);
 
 		if(oldr != NULL)
 			SetSuffix(oldr->arrayIndex, r->arrayIndex);

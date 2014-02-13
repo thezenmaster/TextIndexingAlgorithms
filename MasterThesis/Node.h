@@ -8,6 +8,7 @@ struct Node{
 
 	int numberofEdges;
 	int edgeStartIndex;
+	int lastEdgeIndex;
 };
 typedef struct Node Node;
 

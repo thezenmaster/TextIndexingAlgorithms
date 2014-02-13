@@ -1,9 +1,10 @@
 #ifndef NODE_EDGE_H
 #define NODE_EDGE_H
 struct NodeEdge{
-	char c;
+	char symbol;
 	int nextElement;
-	int nextNode;
+	int edgeIndex;
+	//int nextNode;
 };
 typedef struct Node Node;
 
