@@ -65,8 +65,9 @@ void InitTree()
 	SetSuffix(1, 0);
 
 	edges = (Edge**) malloc(INITIAL_ARRAY_SIZE * sizeof(Edge));
+	edges[0] = Edge_Create(0, 0, -1, 1);
 	edgesCount = INITIAL_ARRAY_SIZE;
-	freeEdgeIndex = 0;
+	freeEdgeIndex = 1;
 
 	nodeEdges = (NodeEdge**) malloc(INITIAL_ARRAY_SIZE * sizeof(NodeEdge));
 	nodeEdgesCount = INITIAL_ARRAY_SIZE;
@@ -79,7 +80,10 @@ int CheckEdgeExist(Node *node, char c, int *index)
 {
 	//If this is the auxiliary state, a transition exists.
 	if(node->arrayIndex == 0)
+	{
+		*index = 0;
 		return 1;
+	}
 
 	int edgeIndex = node->edgeStartIndex;
 	if(edgeIndex < 0)
@@ -172,7 +176,8 @@ void Canonize(Node *n, int *k, int p)
 	if(*k > p) return; /*explicit case*/
 
 	int edgeIndex = 0;
-	Edge *e = edges[CheckEdgeExist(n, text[(*k)], &edgeIndex)];
+	CheckEdgeExist(n, text[(*k)], &edgeIndex);
+	Edge *e = edges[edgeIndex];
 	int start = e->startIndex;
 	int end = e->endIndex;
 
@@ -181,7 +186,10 @@ void Canonize(Node *n, int *k, int p)
 		*k = (*k) + end - start + 1;
 		n = nodes[e->nodeIndex];
 		if(*k <= p)
-			e = edges[CheckEdgeExist(n, text[(*k)], &edgeIndex)];
+		{
+			CheckEdgeExist(n, text[(*k)], &edgeIndex);
+			e = edges[edgeIndex];
+		}
 	}
 }
 
@@ -231,7 +239,7 @@ int SplitEdge(Node *s, int k, int p)
 
 Node *CreateNewNode(int textIndex)
 {
-	Node *newNode = Node_Create(freeNodeIndex, textIndex, freeNodeEdgeIndex);
+	Node *newNode = Node_Create(freeNodeIndex, textIndex, -1);
 	nodes[freeNodeIndex] = newNode;
 	freeNodeIndex++;
 
@@ -279,6 +287,7 @@ void UpdateTree(Node *s, int *k, int p)
 		else
 			r = s;
 
+		//TODO: Set edgeStartIndex of the previous node. Include newNode to nodes
 		Node *newNode = CreateNewNode(p);
 		Edge *e = CreateNewEdge(p, currentEnd, newNode->arrayIndex);
 		SetEdge(r, text[p], e->arrayIndex);
