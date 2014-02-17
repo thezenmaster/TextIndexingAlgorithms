@@ -42,7 +42,7 @@ int CheckEndPoint(Node *node, int k, int p, char c);
 //Edge *FindEdge(Node *n, int k);
 Node *CreateNewNode(int textIndex);
 Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex);
-void Canonize(Node *n, int *k, int *p);
+void Canonize(Node *n, int *k, int p);
 void UpdateTree(Node *s, int *k, int p);
 
 void InitTree()
@@ -65,7 +65,8 @@ void InitTree()
 	SetSuffix(1, 0);
 
 	edges = (Edge**) malloc(INITIAL_ARRAY_SIZE * sizeof(Edge));
-	edges[0] = Edge_Create(0, 0, -1, 1);
+	//There is an edge from the auxiliary state to the root for every letter of the alphabet.
+	edges[0] = Edge_Create(0, -1, -1, 1);
 	edgesCount = INITIAL_ARRAY_SIZE;
 	freeEdgeIndex = 1;
 
@@ -158,7 +159,7 @@ void SetSuffix(int index, int val)
 //explicit parent? canonical reference point. we only need such pair for active point?
 int CheckEndPoint(Node *node, int k, int p, char c)
 {
-	if(k<=p)
+	if(k<=p) //Implicit case.
 	{
 		int edgeIndex = 0;
 		Edge *e = edges[CheckEdgeExist(node, text[k], &edgeIndex)];
@@ -188,12 +189,14 @@ void Canonize(Node *n, int *k, int p)
 	//TODO: Fix loop.
 	while((end - start) <= (p - (*k)))
 	{
-		*k = (*k) + end - start + 1;
+ 		*k = (*k) + end - start + 1;
 		n = nodes[e->nodeIndex];
 		if(*k <= p)
 		{
 			CheckEdgeExist(n, text[(*k)], &edgeIndex);
 			e = edges[edgeIndex];
+			start = e->startIndex;
+			end = e->endIndex;
 		}
 	}
 }
