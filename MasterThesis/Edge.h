@@ -6,6 +6,7 @@ struct Edge {
 	int startIndex;
 	int endIndex;
 	int nodeIndex;
+	int isLeaf;
 };
 typedef struct Edge Edge;
 

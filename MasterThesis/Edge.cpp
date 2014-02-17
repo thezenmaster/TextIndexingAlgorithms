@@ -11,6 +11,7 @@ Edge *Edge_Create(int arrayIndex, int startIndex, int endIndex, int nodeIndex)
 	edge->endIndex = endIndex;
 	//-1 in the case of open edge.
 	edge->nodeIndex = nodeIndex;
+	edge->isLeaf = 1;
 
 	return edge;
 }

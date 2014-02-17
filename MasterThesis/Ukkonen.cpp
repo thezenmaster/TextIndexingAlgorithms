@@ -67,6 +67,7 @@ void InitTree()
 	edges = (Edge**) malloc(INITIAL_ARRAY_SIZE * sizeof(Edge));
 	//There is an edge from the auxiliary state to the root for every letter of the alphabet.
 	edges[0] = Edge_Create(0, -1, -1, 1);
+	edges[0]->isLeaf = 0;
 	edgesCount = INITIAL_ARRAY_SIZE;
 	freeEdgeIndex = 1;
 
@@ -184,7 +185,8 @@ void Canonize(Node *n, int *k, int p)
 	CheckEdgeExist(n, text[(*k)], &edgeIndex);
 	Edge *e = edges[edgeIndex];
 	int start = e->startIndex;
-	int end = e->endIndex;
+	//Current end? Is this an open edge?
+	int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
 
 	//TODO: Fix loop.
 	while((end - start) <= (p - (*k)))
@@ -196,7 +198,7 @@ void Canonize(Node *n, int *k, int p)
 			CheckEdgeExist(n, text[(*k)], &edgeIndex);
 			e = edges[edgeIndex];
 			start = e->startIndex;
-			end = e->endIndex;
+			end = e->isLeaf == 1 ? currentEnd : e->endIndex;
 		}
 	}
 }
@@ -233,6 +235,7 @@ int SplitEdge(Node *s, int k, int p)
 
 	//(s, (k', k' + p - k, r)
 	e->endIndex = end + p - k;
+	e->isLeaf = 0;
 	e->nodeIndex = r->arrayIndex;
 
 	//(r, (k' + p - k +1, p'), s')
