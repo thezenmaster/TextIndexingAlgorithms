@@ -110,7 +110,11 @@ int CheckEdgeExist(Node *node, char c, int *index)
 void SetEdge(Node *node, char c, int val)
 {
 	nodeEdges[freeNodeEdgeIndex] = NodeEdge_Create(c, val);
+	if(node->edgeStartIndex == -1)
+		node->edgeStartIndex = freeNodeEdgeIndex;
+
 	node->lastEdgeIndex = freeNodeEdgeIndex;
+	node->numberofEdges++;
 	freeNodeEdgeIndex++;
 	
 	if(freeNodeEdgeIndex == nodeEdgesCount)
@@ -181,6 +185,7 @@ void Canonize(Node *n, int *k, int p)
 	int start = e->startIndex;
 	int end = e->endIndex;
 
+	//TODO: Fix loop.
 	while((end - start) <= (p - (*k)))
 	{
 		*k = (*k) + end - start + 1;
@@ -287,7 +292,6 @@ void UpdateTree(Node *s, int *k, int p)
 		else
 			r = s;
 
-		//TODO: Set edgeStartIndex of the previous node. Include newNode to nodes
 		Node *newNode = CreateNewNode(p);
 		Edge *e = CreateNewEdge(p, currentEnd, newNode->arrayIndex);
 		SetEdge(r, text[p], e->arrayIndex);
