@@ -96,7 +96,7 @@ int CheckEdgeExist(Node *node, char c, int *index)
 		NodeEdge* ne = nodeEdges[edgeIndex];
 		if(ne->symbol == c)
 		{
-			(*index) = edgeIndex;
+			(*index) = nodeEdges[edgeIndex]->edgeIndex;
 			return 1;
 		}
 		
@@ -163,7 +163,9 @@ int CheckEndPoint(Node *node, int k, int p, char c)
 	if(k<=p) //Implicit case.
 	{
 		int edgeIndex = 0;
-		Edge *e = edges[CheckEdgeExist(node, text[k], &edgeIndex)];
+		//Should we check if the edge is not null?
+		CheckEdgeExist(node, text[k], &edgeIndex);
+		Edge *e = edges[edgeIndex];
 		int start = e->startIndex;
 		if(c == text[start + p - k + 1])
 			return 1;
