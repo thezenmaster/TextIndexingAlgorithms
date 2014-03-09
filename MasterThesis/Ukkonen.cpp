@@ -7,7 +7,10 @@
 #include "Node.h"
 #include "NodeEdge.h"
 #include "Edge.h"
+#include "CompressedTransitionTable.h"
 #define INITIAL_ARRAY_SIZE 1024
+
+const int asciiStartIndex = 32;
 
 /*The text file we are creating index for.*/
 char *text;
@@ -30,6 +33,11 @@ int freeNodeIndex;
 int freeEdgeIndex;
 int freeNodeEdgeIndex;
 int currentEnd = 0;
+
+/*Properties of the compressed transition table.*/
+int* check;
+int* next;
+int* length;
 
 int initVal = -1;
 void InitTree();
@@ -329,10 +337,41 @@ void UpdateTree(Node *s, int *k, int p)
 	Canonize(s, k, p);
 }
 
+int FindSubstring(char* str)
+{
+	/*Start search from the root node.*/
+	Node* n = nodes[1];
+	for (int i = 0; str[i] != '\0'; i++)
+	{
+		int index = n->baseAddress + ((int) str[i]) - asciiStartIndex;
+		if(check[index] != n->arrayIndex)
+			return 0;
+		
+		n = nodes[next[index]];
+	}
+
+	return 1;
+}
+
+void TestResult()
+{
+	char *tests[] = { "co", "oco", "oa","oY"};
+	for (int i = 0; i < 4; i++)
+	{
+		char* substring = tests[i];
+		if(FindSubstring(substring) == 1)
+			printf("Match!");
+		else
+			printf("There was no match!");	
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	InitTree();
 	text = "cocoa";
 	ConstructSTree(text);
+	ConstructTable(nodeEdges, nodes, freeNodeIndex - 1, edges, freeEdgeIndex - 1, length, check, next);
+	TestResult();
     return 0;
 }
