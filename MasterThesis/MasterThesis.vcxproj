@@ -80,6 +80,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CompressedTransitionTable.h" />
     <ClInclude Include="Edge.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeEdge.h" />
@@ -87,6 +88,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CompressedTransitionTable.cpp" />
     <ClCompile Include="Edge.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeEdge.cpp" />

@@ -7,10 +7,14 @@ struct Node{
 	int textIndex;
 
 	int numberofEdges;
+	/*Fields used by the temporary list of edges for all nodes*/
 	int edgeStartIndex;
+	int currentEdgeIndex;
 	int lastEdgeIndex;
+	/*Base address in the array of transitions*/
+	unsigned baseAddress;
 };
 typedef struct Node Node;
 
-Node *Node_Create(int arrayIndex, int textIndex, int edgeStartIndex);
+Node *Node_Create(int arrayIndex, int textIndex);
 #endif

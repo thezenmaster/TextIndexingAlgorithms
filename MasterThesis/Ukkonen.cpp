@@ -52,8 +52,8 @@ void InitTree()
 	nodesCount = INITIAL_ARRAY_SIZE;
 	nodes = (Node**) malloc(INITIAL_ARRAY_SIZE * sizeof(Node));
 	//Don't really need to set an edge from the auxiliary state to the root.
-	nodes[0] = Node_Create(0, -1, -1);
-	nodes[1] = Node_Create(1, -1, -1);
+	nodes[0] = Node_Create(0, -1);
+	nodes[1] = Node_Create(1, -1);
 	//int a = nodes[1]->edges[0];
 	freeNodeIndex = 2;
 
@@ -105,7 +105,6 @@ int CheckEdgeExist(Node *node, char c, int *index)
 		else
 			edgeIndex = ne->nextElement;
 	}
-	//Set Edge??
 	return 0;
 }
 
@@ -114,6 +113,13 @@ void SetEdge(Node *node, char c, int val)
 	nodeEdges[freeNodeEdgeIndex] = NodeEdge_Create(c, val);
 	if(node->edgeStartIndex == -1)
 		node->edgeStartIndex = freeNodeEdgeIndex;
+	
+	if(node->currentEdgeIndex != -1)
+	{
+		nodeEdges[node->currentEdgeIndex]->nextElement = freeNodeEdgeIndex;
+	}
+
+	node->currentEdgeIndex = freeNodeEdgeIndex;
 
 	node->lastEdgeIndex = freeNodeEdgeIndex;
 	node->numberofEdges++;
@@ -252,7 +258,7 @@ int SplitEdge(Node *s, int k, int p)
 
 Node *CreateNewNode(int textIndex)
 {
-	Node *newNode = Node_Create(freeNodeIndex, textIndex, -1);
+	Node *newNode = Node_Create(freeNodeIndex, textIndex);
 	nodes[freeNodeIndex] = newNode;
 	freeNodeIndex++;
 

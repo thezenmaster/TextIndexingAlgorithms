@@ -6,7 +6,7 @@ struct NodeEdge{
 	int edgeIndex;
 	//int nextNode;
 };
-typedef struct Node Node;
+typedef struct NodeEdge NodeEdge;
 
-NodeEdge *NodeEdge_Create(char c, int nextElement);
+NodeEdge *NodeEdge_Create(char c, int edgeIndex);
 #endif
