@@ -346,8 +346,19 @@ int FindSubstring(char* str)
 		int index = n->baseAddress + ((int) str[i]) - asciiStartIndex;
 		if(check[index] != n->arrayIndex)
 			return 0;
-		
-		n = nodes[next[index]];
+		Edge* e = edges[next[index]];
+		/*TODO: Fix for set of strings*/
+		int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
+		for (int j = (e->startIndex + 1); j <= end; j++)
+		{
+			i++;
+			if(str[i] == '\0')
+				return 1;
+
+			if(str[i] != text[j])
+				return 0;
+		}
+		n = nodes[e->nodeIndex];
 	}
 
 	return 1;

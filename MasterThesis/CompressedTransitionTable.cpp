@@ -83,7 +83,7 @@ void SetEdges(NodeEdge **nodeEdges, int* check, int* next, int offset, Node* n, 
 	{
 		int index = offset + ((int) ne->symbol) - asciiStartIndex;
 		check[index] = n->arrayIndex;
-		next[index] = edges[ne->edgeIndex]->nodeIndex;
+		next[index] = ne->edgeIndex;
 		ne = nodeEdges[ne->nextElement];
 	}
 }
