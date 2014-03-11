@@ -13,6 +13,7 @@ const int alphabetSize = 100;
 
 int CheckEdges(NodeEdge* ne, NodeEdge **nodeEdges, int* check, int offset, int tableLength);
 void SetEdges(NodeEdge **nodeEdges, int* check, int* next, int offset, Node* n, Edge** edges);
+int ComputeCharIndex(char c);
 
 void ConstructTable(NodeEdge **nodeEdges, Node** nodes, int numNodes, Edge** edges, int numEdges, int* tableLength, int* check, int* next)
 {
@@ -67,7 +68,7 @@ int CheckEdges(NodeEdge* ne, NodeEdge **nodeEdges, int* check, int offset, int t
 	while(ne->nextElement > -1)
 	{
 		/*don't take the first 32 ascii symbols into account*/
-		int index = offset + ((int) ne->symbol) - asciiStartIndex;
+		int index = offset + (ComputeCharIndex(ne->symbol)) - asciiStartIndex;
 		if(index >= tableLength || check[index] != 0)
 			return 0;
 		ne = nodeEdges[ne->nextElement];
@@ -81,9 +82,33 @@ void SetEdges(NodeEdge **nodeEdges, int* check, int* next, int offset, Node* n, 
 	NodeEdge* ne = nodeEdges[n->edgeStartIndex];
 	while(ne->nextElement > -1)
 	{
-		int index = offset + ((int) ne->symbol) - asciiStartIndex;
+		int index = offset + (ComputeCharIndex(ne->symbol)) - asciiStartIndex;
 		check[index] = n->arrayIndex;
 		next[index] = ne->edgeIndex;
 		ne = nodeEdges[ne->nextElement];
 	}
+}
+
+/*To improve compression assign small index to frequent characters.*/
+int ComputeCharIndex(char c)
+{
+	int index = (int) c;
+
+	/*Cause an error if we receive a control character or an extended ASCII symbol.*/
+	if(index < 32 || index > 126)
+		return -1;
+
+	if(index >= 65 && index <=90)
+		index -= 65;
+	else if(index >= 97 && index <= 122)
+		index -= 71;
+	else if(index >= 32 && index <= 64)
+		index +=20;
+	else if(index >=91 && index <= 96)
+		index -=6;
+	else
+		/*index >= 123 && index <= 126*/
+		index -=32;
+
+	return index;
 }
