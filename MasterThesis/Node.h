@@ -12,7 +12,7 @@ struct Node{
 	int currentEdgeIndex;
 	int lastEdgeIndex;
 	/*Base address in the array of transitions*/
-	unsigned baseAddress;
+	int baseAddress;
 };
 typedef struct Node Node;
 

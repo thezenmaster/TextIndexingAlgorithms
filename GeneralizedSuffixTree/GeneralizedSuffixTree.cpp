@@ -51,7 +51,7 @@ int CheckEndPoint(Node *node, int k, int p, char c);
 Node *CreateNewNode(int textIndex);
 Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex);
 void Canonize(Node *n, int *k, int p);
-void UpdateTree(Node *s, int *k, int p);
+void UpdateTree(Node *s, int *k, int p, char c);
 
 void InitTree()
 {
@@ -164,13 +164,6 @@ void SetSuffix(int index, int val)
 	top++;
 }
 
-//Edge *FindEdge(Node *n, int k)
-//{
-//	//Edge *e = edges[n->edges[(int) text[k]]];
-//	Edge *e = Edge_Create(0,0,0,0);
-//	return e;
-//}
-
 //explicit parent? canonical reference point. we only need such pair for active point?
 int CheckEndPoint(Node *node, int k, int p, char c)
 {
@@ -226,8 +219,18 @@ void ConstructSTree(char* str)
 
 	for (int i = 0; str[i] != '\0'; i++)
 	{
+		char c = str[i];
+		/*The current word has ended, and a new one begins.
+		Move the active point to the root node.*/
+		if(c == ' ' || c == '\n')
+		{
+			/*Insert a terminal character*/
+			c = '$';
+			s = nodes[root];
+			k = i;
+		}
 		currentEnd = i;
-		UpdateTree(s, &k, currentEnd);
+		UpdateTree(s, &k, currentEnd, c);
 	}
 	return;
 }
@@ -298,10 +301,9 @@ Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex)
 	return newEdge;
 }
 
-void UpdateTree(Node *s, int *k, int p)
+void UpdateTree(Node *s, int *k, int p, char c)
 {
 	/*(s, (k, p-1)) is the canonical reference pair for the active point*/
-	char c = text[p];
 	Node *oldr = NULL;
 	
 	while(!CheckEndPoint(s, *k, p - 1, c))
@@ -383,6 +385,7 @@ int main(int argc, char *argv[])
 	text = "cocoa";
 	ConstructSTree(text);
 	ConstructTable(nodeEdges, nodes, freeNodeIndex - 1, edges, freeEdgeIndex - 1, length, check, next);
+	free(nodeEdges);
 	TestResult();
     return 0;
 }

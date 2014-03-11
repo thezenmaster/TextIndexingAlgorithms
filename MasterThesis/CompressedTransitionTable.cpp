@@ -9,19 +9,19 @@
 #include "Edge.h"
 
 const int asciiStartIndex = 32;
+const int alphabetSize = 100;
 
 int CheckEdges(NodeEdge* ne, NodeEdge **nodeEdges, int* check, int offset, int tableLength);
 void SetEdges(NodeEdge **nodeEdges, int* check, int* next, int offset, Node* n, Edge** edges);
 
 void ConstructTable(NodeEdge **nodeEdges, Node** nodes, int numNodes, Edge** edges, int numEdges, int* tableLength, int* check, int* next)
 {
-	check = (int*) malloc(numEdges*sizeof(int));
-	next =  (int*) malloc(numEdges*sizeof(int));
-	for (int i = 0; i < numEdges; i++)
+	int count = numEdges * alphabetSize;
+	for (int i = 0; i < count; i++)
 	{
 		check[i] = 0;
 	}
-	*tableLength = numEdges;
+	*tableLength = count;
 	int freeIndex = 0;
 
 	/*root node is at index 1.*/

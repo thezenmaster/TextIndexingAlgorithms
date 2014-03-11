@@ -37,7 +37,8 @@ int currentEnd = 0;
 /*Properties of the compressed transition table.*/
 int* check;
 int* next;
-int* length;
+int length;
+const int alphabetSize = 100;
 
 int initVal = -1;
 void InitTree();
@@ -322,7 +323,9 @@ void UpdateTree(Node *s, int *k, int p)
 			SetSuffix(oldr->arrayIndex, r->arrayIndex);
 
 		oldr = r;
-		s = nodes[suffixPointers[s->arrayIndex]];
+		if(s->arrayIndex > 0)
+			s = nodes[suffixPointers[s->arrayIndex]];
+
 		Canonize(s, k, p - 1);
 	}
 	
@@ -382,7 +385,11 @@ int main(int argc, char *argv[])
 	InitTree();
 	text = "cocoa";
 	ConstructSTree(text);
-	ConstructTable(nodeEdges, nodes, freeNodeIndex - 1, edges, freeEdgeIndex - 1, length, check, next);
+	int count = (freeEdgeIndex - 1) * alphabetSize;
+	check = (int*) malloc(count*sizeof(int));
+	next =  (int*) malloc(count*sizeof(int));
+	ConstructTable(nodeEdges, nodes, freeNodeIndex - 1, edges, freeEdgeIndex - 1, &length, check, next);
+	free(nodeEdges);
 	TestResult();
     return 0;
 }
