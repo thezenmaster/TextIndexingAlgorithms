@@ -194,12 +194,12 @@ int CheckEndPoint(Node *node, int k, int p, char c)
 	}
 }
 
-void Canonize(Node *n, int *k, int p)
+void Canonize(Node **n, int *k, int p)
 {
 	if(*k > p) return; /*explicit case*/
 
 	int edgeIndex = 0;
-	CheckEdgeExist(n, text[(*k)], &edgeIndex);
+	CheckEdgeExist(*n, text[(*k)], &edgeIndex);
 	Edge *e = edges[edgeIndex];
 	int start = e->startIndex;
 	//Current end? Is this an open edge?
@@ -209,10 +209,10 @@ void Canonize(Node *n, int *k, int p)
 	while((end - start) <= (p - (*k)))
 	{
  		*k = (*k) + end - start + 1;
-		n = nodes[e->nodeIndex];
+		(*n) = nodes[e->nodeIndex];
 		if(*k <= p)
 		{
-			CheckEdgeExist(n, text[(*k)], &edgeIndex);
+			CheckEdgeExist(*n, text[(*k)], &edgeIndex);
 			e = edges[edgeIndex];
 			start = e->startIndex;
 			end = e->isLeaf == 1 ? currentEnd : e->endIndex;
@@ -326,7 +326,7 @@ void UpdateTree(Node *s, int *k, int p)
 		if(s->arrayIndex > 0)
 			s = nodes[suffixPointers[s->arrayIndex]];
 
-		Canonize(s, k, p - 1);
+		Canonize(&s, k, p - 1);
 	}
 	
 	if(oldr != NULL)
@@ -337,7 +337,7 @@ void UpdateTree(Node *s, int *k, int p)
 			SetSuffix(index, s->arrayIndex);
 	}
 
-	Canonize(s, k, p);
+	Canonize(&s, k, p);
 }
 
 int FindSubstring(char* str)
@@ -363,7 +363,11 @@ int FindSubstring(char* str)
 		}
 		n = nodes[e->nodeIndex];
 	}
-
+	/*TODO*/
+	/*if(str[i] == '\0')
+		return 1;
+	else
+		return 0;*/
 	return 1;
 }
 
@@ -380,11 +384,32 @@ void TestResult()
 	}
 }
 
+void PrintTree()
+{
+	for (int i = 1; i < freeNodeIndex; i++)
+	{
+		printf("Node %d:\n", i);
+		Node* n = nodes[i];
+		int index = n->edgeStartIndex;
+		for (int j = 0; j  < n->numberofEdges; j ++)
+		{
+			NodeEdge* ne = nodeEdges[index];
+			printf("%c ", ne->symbol);
+			Edge* e = edges[ne->edgeIndex];
+			int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
+			printf("[%d, %d]", e->startIndex, end);
+			printf("\n");
+			index = ne->nextElement;
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	InitTree();
 	text = "cocoa";
 	ConstructSTree(text);
+	PrintTree();
 	int count = (freeEdgeIndex - 1) * alphabetSize;
 	check = (int*) malloc(count*sizeof(int));
 	next =  (int*) malloc(count*sizeof(int));
