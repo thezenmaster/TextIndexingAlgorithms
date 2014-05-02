@@ -52,7 +52,7 @@ int CheckEndPoint(Node *node, int k, int p, char c);
 Node *CreateNewNode(int textIndex);
 Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex);
 void Canonize(Node *n, int *k, int p);
-void UpdateTree(Node *s, int *k, int p);
+Node* UpdateTree(Node *s, int *k, int p);
 
 void InitTree()
 {
@@ -228,7 +228,7 @@ void ConstructSTree(char* str)
 	for (int i = 0; str[i] != '\0'; i++)
 	{
 		currentEnd = i;
-		UpdateTree(s, &k, currentEnd);
+		s = UpdateTree(s, &k, currentEnd);
 	}
 	return;
 }
@@ -245,13 +245,14 @@ int SplitEdge(Node *s, int k, int p)
 	//k'
 	int start = e->startIndex;
 	//p'
-	int end = e->endIndex;
+	int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
 	int endNodeIndex = e->nodeIndex;
 
-	Node *r = CreateNewNode(end-1);
+	int textIndex = end - 1;
+	Node *r = CreateNewNode(textIndex);
 
 	//(s, (k', k' + p - k, r)
-	e->endIndex = end + p - k;
+	e->endIndex = start + p - k;
 	e->isLeaf = 0;
 	e->nodeIndex = r->arrayIndex;
 
@@ -299,7 +300,7 @@ Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex)
 	return newEdge;
 }
 
-void UpdateTree(Node *s, int *k, int p)
+Node* UpdateTree(Node *s, int *k, int p)
 {
 	/*(s, (k, p-1)) is the canonical reference pair for the active point*/
 	char c = text[p];
@@ -338,6 +339,8 @@ void UpdateTree(Node *s, int *k, int p)
 	}
 
 	Canonize(&s, k, p);
+
+	return s;
 }
 
 int FindSubstring(char* str)
@@ -398,6 +401,7 @@ void PrintTree()
 			Edge* e = edges[ne->edgeIndex];
 			int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
 			printf("[%d, %d]", e->startIndex, end);
+			printf(" End node: '%d'", e->nodeIndex);
 			printf("\n");
 			index = ne->nextElement;
 		}
@@ -407,7 +411,8 @@ void PrintTree()
 int main(int argc, char *argv[])
 {
 	InitTree();
-	text = "cocoa";
+	//text = "cocoa";
+	text = "abcabxabcd";
 	ConstructSTree(text);
 	PrintTree();
 	int count = (freeEdgeIndex - 1) * alphabetSize;
