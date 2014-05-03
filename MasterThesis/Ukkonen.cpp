@@ -37,9 +37,10 @@ int currentEnd = 0;
 /*Properties of the compressed transition table.*/
 int* check;
 int* next;
-int length;
-const int alphabetSize = 100;
+int compressedTableLength;
 
+/*The original 95 printable ASCII characters*/
+const int alphabetSize = 95;
 int initVal = -1;
 void InitTree();
 void ConstructSTree(char* str);
@@ -130,7 +131,6 @@ void SetEdge(Node *node, char c, int val)
 
 	node->currentEdgeIndex = freeNodeEdgeIndex;
 
-	node->lastEdgeIndex = freeNodeEdgeIndex;
 	node->numberofEdges++;
 	freeNodeEdgeIndex++;
 	
@@ -408,18 +408,34 @@ void PrintTree()
 	}
 }
 
+void PrintCompressedTable()
+{
+	for (int i = 0; i < compressedTableLength; i++)
+	{
+		printf("check[%d] = %d", i, check[i]);
+		if(check[i] != 0)
+		{
+			Edge* e = edges[next[i]];
+			printf(" '%c' -> %d\n", text[e->startIndex], e->nodeIndex);
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	InitTree();
-	//text = "cocoa";
+	text = "cocoa";
 	text = "abcabxabcd";
 	ConstructSTree(text);
 	PrintTree();
-	int count = (freeEdgeIndex - 1) * alphabetSize;
+	/*Optimistically assume we'll only need as many slots in the compressed table,
+	as the count of edges in the tree.*/
+	int count = freeNodeEdgeIndex - 1;
 	check = (int*) malloc(count*sizeof(int));
 	next =  (int*) malloc(count*sizeof(int));
-	ConstructTable(nodeEdges, nodes, freeNodeIndex - 1, edges, freeEdgeIndex - 1, &length, check, next);
+	compressedTableLength = count;
+	ConstructTable(nodeEdges, nodes, freeNodeIndex - 1, edges, freeEdgeIndex - 1, &compressedTableLength, check, next);
 	free(nodeEdges);
-	TestResult();
+	PrintCompressedTable();
     return 0;
 }

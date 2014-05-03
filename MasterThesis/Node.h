@@ -10,8 +10,7 @@ struct Node{
 	/*Fields used by the temporary list of edges for all nodes*/
 	int edgeStartIndex;
 	int currentEdgeIndex;
-	int lastEdgeIndex;
-	/*Base address in the array of transitions*/
+	/*Base address in the table of transitions*/
 	int baseAddress;
 };
 typedef struct Node Node;

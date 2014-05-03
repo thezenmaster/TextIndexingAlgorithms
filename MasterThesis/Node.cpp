@@ -13,7 +13,6 @@ Node *Node_Create(int arrayIndex, int textIndex)
 	node->numberofEdges = 0;
 	node->edgeStartIndex = -1;
 	node->currentEdgeIndex = -1;
-	node->lastEdgeIndex = -1;
 	node->baseAddress = -1;
 
 	return node;
