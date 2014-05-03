@@ -11,5 +11,5 @@ the number of edges 'numEdges'.
 Output: Constructs two arrays - 'check' and 'next'. They are used to store nodes transitions in the Suffix tree.
 The size of the arrays 'check' and 'next' - 'tableLength'.
 */
-void ConstructTable(NodeEdge **nodeEdges, Node** nodes, int numNodes, Edge** edges, int numEdges, int* tableLength, int* check, int* next);
+void ConstructTable(NodeEdge **nodeEdges, Node** nodes, int numNodes, Edge** edges, int* tableLength, int* check, int* next);
 #endif

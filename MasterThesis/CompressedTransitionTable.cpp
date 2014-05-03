@@ -11,13 +11,15 @@
 const int asciiStartIndex = 32;
 /*The original 95 printable ASCII characters*/
 const int alphabetSize = 95;
+int lastIndex = 0;
 
 int CheckEdges(Node* n, NodeEdge **nodeEdges, int* check, int offset, int tableLength);
 void SetEdges(NodeEdge **nodeEdges, int* check, int* next, int offset, Node* n);
 int ComputeCharIndex(char c);
 
-void ConstructTable(NodeEdge **nodeEdges, Node** nodes, int numNodes, Edge** edges, int numEdges, int* tableLength, int* check, int* next)
+void ConstructTable(NodeEdge **nodeEdges, Node** nodes, int numNodes, Edge** edges, int* tableLength, int* check, int* next)
 {
+	/*TODO: Check if we can get out of the array bounds.*/
 	for (int i = 0; i < (*tableLength); i++)
 	{
 		check[i] = 0;
@@ -31,32 +33,42 @@ void ConstructTable(NodeEdge **nodeEdges, Node** nodes, int numNodes, Edge** edg
 			continue;
 
 		//NodeEdge* ne = nodeEdges[nodes[i]->edgeStartIndex];
-
-		for (int j = 0; j < (*tableLength); j++)
+		while(nodes[i]->baseAddress == -1)
 		{
-			if(check[j] != 0 || (CheckEdges(nodes[i], nodeEdges, check, j, *tableLength) == 0))
-				continue;
-			
-			nodes[i]->baseAddress = j;
-			break;
-		}
-
-		/*We haven't found spot for the node. That means we need to increase the arrays*/
-		if(nodes[i]->baseAddress == -1)
-		{
-			check = (int*) realloc(check, 2*(*tableLength)*sizeof(int));
-
-			next = (int*) realloc(next, 2*(*tableLength)*sizeof(int));
-
-			for (int k = (*tableLength); k < 2*(*tableLength); k++)
+			for (int j = 0; j < (*tableLength); j++)
 			{
-				check[k] = 0;
-			}
+				if(check[j] != 0 || (CheckEdges(nodes[i], nodeEdges, check, j, *tableLength) == 0))
+					continue;
 			
-			nodes[i]->baseAddress = *tableLength;
-			(*tableLength) *= 2;
+				nodes[i]->baseAddress = j;
+				break;
+			}
+
+			/*We haven't found spot for the node. That means we need to increase the arrays*/
+			if(nodes[i]->baseAddress == -1)
+			{
+				(*tableLength) *= 2;
+				check = (int*) realloc(check, (*tableLength)*sizeof(int));
+
+				next = (int*) realloc(next, (*tableLength)*sizeof(int));
+
+				for (int k = (*tableLength); k < (*tableLength); k++)
+				{
+					check[k] = 0;
+				}
+			
+				//nodes[i]->baseAddress = *tableLength;
+			}
 		}
 		SetEdges(nodeEdges, check, next, nodes[i]->baseAddress, nodes[i]);
+	}
+
+	if((lastIndex + 1) < (*tableLength))
+	{		
+		lastIndex++;
+		check= (int*) realloc(check, (lastIndex)*sizeof(int));
+		next = (int*) realloc(next, (lastIndex)*sizeof(int));
+		(*tableLength) = lastIndex;
 	}
 
 	return;
@@ -87,6 +99,8 @@ void SetEdges(NodeEdge **nodeEdges, int* check, int* next, int offset, Node* n)
 		check[index] = n->arrayIndex;
 		next[index] = ne->edgeIndex;
 		nextElement = ne->nextElement;
+		if(lastIndex < index)
+			lastIndex = index;
 	}
 }
 
@@ -100,10 +114,10 @@ int ComputeCharIndex(char c)
 		return -1;
 	/*A-Z*/
 	if(index >= 65 && index <=90)
-		index -= 65;
+		index -= 39;//65;
 	/*a-z*/
 	else if(index >= 97 && index <= 122)
-		index -= 71;
+		index -= 97;//71;
 	/*Numbers and punctuation marks*/
 	else if(index >= 32 && index <= 64)
 		index +=20;

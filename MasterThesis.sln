@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UkkonenSuffixTree", "MasterThesis\MasterThesis.vcxproj", "{DFA03533-9CE4-4935-AFB1-4D34BEBB27FC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeneralizedSuffixTree", "GeneralizedSuffixTree\GeneralizedSuffixTree.vcxproj", "{8207BF60-E2C7-467C-AA20-18804C227F05}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -15,10 +13,6 @@ Global
 		{DFA03533-9CE4-4935-AFB1-4D34BEBB27FC}.Debug|Win32.Build.0 = Debug|Win32
 		{DFA03533-9CE4-4935-AFB1-4D34BEBB27FC}.Release|Win32.ActiveCfg = Release|Win32
 		{DFA03533-9CE4-4935-AFB1-4D34BEBB27FC}.Release|Win32.Build.0 = Release|Win32
-		{8207BF60-E2C7-467C-AA20-18804C227F05}.Debug|Win32.ActiveCfg = Debug|Win32
-		{8207BF60-E2C7-467C-AA20-18804C227F05}.Debug|Win32.Build.0 = Debug|Win32
-		{8207BF60-E2C7-467C-AA20-18804C227F05}.Release|Win32.ActiveCfg = Release|Win32
-		{8207BF60-E2C7-467C-AA20-18804C227F05}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

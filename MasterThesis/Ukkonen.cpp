@@ -416,8 +416,9 @@ void PrintCompressedTable()
 		if(check[i] != 0)
 		{
 			Edge* e = edges[next[i]];
-			printf(" '%c' -> %d\n", text[e->startIndex], e->nodeIndex);
+			printf(" '%c' -> %d", text[e->startIndex], e->nodeIndex);
 		}
+		printf("\n");
 	}
 }
 
@@ -430,11 +431,10 @@ int main(int argc, char *argv[])
 	PrintTree();
 	/*Optimistically assume we'll only need as many slots in the compressed table,
 	as the count of edges in the tree.*/
-	int count = freeNodeEdgeIndex - 1;
-	check = (int*) malloc(count*sizeof(int));
-	next =  (int*) malloc(count*sizeof(int));
-	compressedTableLength = count;
-	ConstructTable(nodeEdges, nodes, freeNodeIndex - 1, edges, freeEdgeIndex - 1, &compressedTableLength, check, next);
+	compressedTableLength = (freeNodeEdgeIndex - 1) > alphabetSize ? (freeNodeEdgeIndex - 1) : alphabetSize;
+	check = (int*) malloc(compressedTableLength*sizeof(int));
+	next =  (int*) malloc(compressedTableLength*sizeof(int));
+	ConstructTable(nodeEdges, nodes, freeNodeIndex - 1, edges, &compressedTableLength, check, next);
 	free(nodeEdges);
 	PrintCompressedTable();
     return 0;
