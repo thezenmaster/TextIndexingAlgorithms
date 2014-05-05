@@ -2,16 +2,15 @@
 #include "Edge.h"
 #include <stdlib.h>
 
-Edge *Edge_Create(int arrayIndex, int startIndex, int endIndex, int nodeIndex)
+Edge *Edge_Create(int arrayIndex, int startIndex, int nodeIndex)
 {
 	Edge *edge = (Edge*) malloc(sizeof(Edge));
 
 	edge->arrayIndex = arrayIndex;
 	edge->startIndex = startIndex;
-	edge->endIndex = endIndex;
-	//-1 in the case of open edge.
+	/*-1 indicates the edge is open.*/
+	edge->endIndex = -1;
 	edge->nodeIndex = nodeIndex;
-	edge->isLeaf = 1;
 
 	return edge;
 }

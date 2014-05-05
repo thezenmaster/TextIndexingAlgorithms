@@ -114,10 +114,10 @@ int ComputeCharIndex(char c)
 		return -1;
 	/*A-Z*/
 	if(index >= 65 && index <=90)
-		index -= 39;//65;
+		index -= 65;//39;
 	/*a-z*/
 	else if(index >= 97 && index <= 122)
-		index -= 97;//71;
+		index -= 71;//97;
 	/*Numbers and punctuation marks*/
 	else if(index >= 32 && index <= 64)
 		index +=20;

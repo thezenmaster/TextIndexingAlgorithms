@@ -26,6 +26,9 @@ unsigned *from;
 unsigned *to;
 unsigned top;
 
+int wordsCount;
+int *words;
+
 NodeEdge **nodeEdges;
 int nodeEdgesCount;
 
@@ -50,10 +53,11 @@ int CheckSuffixExist(int index);
 void SetSuffix(int index, int val);
 int CheckEndPoint(Node *node, int k, int p, char c);
 //Edge *FindEdge(Node *n, int k);
-Node *CreateNewNode(int textIndex);
-Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex);
+Node *CreateNewNode(int stringIndex, int isLeaf);
+Edge *CreateNewEdge(int startIndex, int nodeIndex);
 void Canonize(Node *n, int *k, int p);
-Node* UpdateTree(Node *s, int *k, int p);
+Node* UpdateTree(Node *s, int *k, int p, char c, int stringIndex);
+int SplitEdge(Node *s, int k, int p, int stringIndex);
 
 void InitTree()
 {
@@ -62,8 +66,8 @@ void InitTree()
 	nodesCount = INITIAL_ARRAY_SIZE;
 	nodes = (Node**) malloc(INITIAL_ARRAY_SIZE * sizeof(Node));
 	//Don't really need to set an edge from the auxiliary state to the root.
-	nodes[0] = Node_Create(0, -1);
-	nodes[1] = Node_Create(1, -1);
+	nodes[0] = Node_Create(0, -1, 0);
+	nodes[1] = Node_Create(1, -1, 0);
 	//int a = nodes[1]->edges[0];
 	freeNodeIndex = 2;
 
@@ -74,10 +78,12 @@ void InitTree()
 	suffixPointers[1] = 0;
 	SetSuffix(1, 0);
 
+	wordsCount = INITIAL_ARRAY_SIZE;
+	words = (int*) malloc(INITIAL_ARRAY_SIZE * (sizeof(int)));
+
 	edges = (Edge**) malloc(INITIAL_ARRAY_SIZE * sizeof(Edge));
 	//There is an edge from the auxiliary state to the root for every letter of the alphabet.
-	edges[0] = Edge_Create(0, -1, -1, 1);
-	edges[0]->isLeaf = 0;
+	edges[0] = Edge_Create(0, -1, 1);
 	edgesCount = INITIAL_ARRAY_SIZE;
 	freeEdgeIndex = 1;
 
@@ -90,7 +96,7 @@ void InitTree()
 
 int CheckEdgeExist(Node *node, char c, int *index)
 {
-	//If this is the auxiliary state, a transition exists.
+	/*If this is the auxiliary state, a transition exists.*/
 	if(node->arrayIndex == 0)
 	{
 		*index = 0;
@@ -201,9 +207,10 @@ void Canonize(Node **n, int *k, int p)
 	int edgeIndex = 0;
 	CheckEdgeExist(*n, text[(*k)], &edgeIndex);
 	Edge *e = edges[edgeIndex];
+
 	int start = e->startIndex;
-	//Current end? Is this an open edge?
-	int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
+	//Is this a leaf?	
+	int end = (*n)->isLeaf == 1 ? words[(*n)->stringIndex] : e->endIndex;
 
 	//TODO: Fix loop.
 	while((end - start) <= (p - (*k)))
@@ -215,7 +222,7 @@ void Canonize(Node **n, int *k, int p)
 			CheckEdgeExist(*n, text[(*k)], &edgeIndex);
 			e = edges[edgeIndex];
 			start = e->startIndex;
-			end = e->isLeaf == 1 ? currentEnd : e->endIndex;
+			end = (*n)->isLeaf == 1 ? words[(*n)->stringIndex] : e->endIndex;
 		}
 	}
 }
@@ -224,41 +231,68 @@ void ConstructSTree(char* str)
 {
 	Node* s = nodes[root];
 	int k = 0;
+	int stringIndex=0;
 
 	for (int i = 0; str[i] != '\0'; i++)
 	{
+		char c = str[i];
+		/*The current word has ended, and a new one begins.
+		Move the active point to the root node.*/
+		if(c == ' ' || c == '\n')
+		{
+			/*Insert a terminal character*/
+			c = '$';
+			str[i] = '$';
+			s = nodes[root];
+			k = i;
+		}
 		currentEnd = i;
-		s = UpdateTree(s, &k, currentEnd);
+
+		/*Update the end index of the current word*/
+		words[stringIndex] = i;
+		s = UpdateTree(s, &k, currentEnd, c, stringIndex);
+
+		/*Update the index to point to the new word in the text*/
+		if(c == '$')
+		{
+			stringIndex++;
+
+			if(stringIndex == wordsCount)
+			{
+				wordsCount *=2;
+				words = (int*) realloc(words, wordsCount * sizeof(int));
+			}
+		}
 	}
 	return;
 }
 
 /*Returns the index of the newly created node*/
-int SplitEdge(Node *s, int k, int p)
+int SplitEdge(Node *s, int k, int p, int stringIndex)
 {
 	char c = text[k];
 	int edgeIndex = -1;
 	CheckEdgeExist(s, c, &edgeIndex);
 
-	//let (s, (k', p'), s') be the w[k]-edge from s
+	/*let (s, (k', p'), s') be the w[k]-edge from s*/
 	Edge *e = edges[edgeIndex];
 	//k'
 	int start = e->startIndex;
 	//p'
-	int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
+	int end = s->isLeaf == 1 ? words[s->stringIndex] : e->endIndex;
 	int endNodeIndex = e->nodeIndex;
 
-	int textIndex = end - 1;
-	Node *r = CreateNewNode(textIndex);
+	/*Create an internal (transition) node*/
+	Node *r = CreateNewNode(stringIndex, 0);
 
-	//(s, (k', k' + p - k, r)
+	/*(s, (k', k' + p - k, r)*/
 	e->endIndex = start + p - k;
-	e->isLeaf = 0;
+	//e->isLeaf = 0;
 	e->nodeIndex = r->arrayIndex;
 
-	//(r, (k' + p - k +1, p'), s')
+	/*(r, (k' + p - k +1, p'), s')*/
 	int newStart = start + p - k + 1;
-	Edge* newEdge = CreateNewEdge(newStart, end, endNodeIndex);
+	Edge* newEdge = CreateNewEdge(newStart, endNodeIndex);
 
 	//r->edges[(char) text[newStart]] = newEdge->arrayIndex;
 	SetEdge(r, text[newStart], newEdge->arrayIndex);
@@ -266,9 +300,9 @@ int SplitEdge(Node *s, int k, int p)
 	return r->arrayIndex;
 }
 
-Node *CreateNewNode(int textIndex)
+Node *CreateNewNode(int stringIndex, int isLeaf)
 {
-	Node *newNode = Node_Create(freeNodeIndex, textIndex);
+	Node *newNode = Node_Create(freeNodeIndex, stringIndex, isLeaf);
 	nodes[freeNodeIndex] = newNode;
 	freeNodeIndex++;
 
@@ -278,14 +312,18 @@ Node *CreateNewNode(int textIndex)
 		Node **temp =(Node**) realloc(nodes, nodesCount * sizeof(Node));
 		if(temp != NULL)
 			nodes = temp;
+
+		suffixPointers = (int*) realloc(suffixPointers, nodesCount * sizeof(int));
+		from = (unsigned*) realloc(from, nodesCount * sizeof(unsigned));
+		to = (unsigned*) realloc(to, nodesCount * sizeof(unsigned));
 	}
 
 	return newNode;
 }
 
-Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex)
+Edge *CreateNewEdge(int startIndex, int nodeIndex)
 {
-	Edge *newEdge = Edge_Create(freeEdgeIndex, startIndex, endIndex, nodeIndex);
+	Edge *newEdge = Edge_Create(freeEdgeIndex, startIndex, nodeIndex);
 	edges[freeEdgeIndex] = newEdge;
 	freeEdgeIndex++;
 
@@ -300,10 +338,10 @@ Edge *CreateNewEdge(int startIndex, int endIndex, int nodeIndex)
 	return newEdge;
 }
 
-Node* UpdateTree(Node *s, int *k, int p)
+Node* UpdateTree(Node *s, int *k, int p, char c, int stringIndex)
 {
 	/*(s, (k, p-1)) is the canonical reference pair for the active point*/
-	char c = text[p];
+	
 	Node *oldr = NULL;
 	
 	while(!CheckEndPoint(s, *k, p - 1, c))
@@ -311,13 +349,14 @@ Node* UpdateTree(Node *s, int *k, int p)
 		Node *r = NULL;
 		/*implicit case*/
 		if(*k <= (p-1))
-			r = nodes[SplitEdge(s, *k, p - 1)];
+			r = nodes[SplitEdge(s, *k, p - 1, stringIndex)];
 		/*explicit case*/
 		else
 			r = s;
 
-		Node *newNode = CreateNewNode(p);
-		Edge *e = CreateNewEdge(p, currentEnd, newNode->arrayIndex);
+		/*Add a new leaf to the tree*/
+		Node *newNode = CreateNewNode(stringIndex, 1);
+		Edge *e = CreateNewEdge(p, newNode->arrayIndex);
 		SetEdge(r, text[p], e->arrayIndex);
 
 		if(oldr != NULL)
@@ -343,49 +382,49 @@ Node* UpdateTree(Node *s, int *k, int p)
 	return s;
 }
 
-int FindSubstring(char* str)
-{
-	/*Start search from the root node.*/
-	Node* n = nodes[1];
-	for (int i = 0; str[i] != '\0'; i++)
-	{
-		int index = n->baseAddress + ((int) str[i]) - asciiStartIndex;
-		if(check[index] != n->arrayIndex)
-			return 0;
-		Edge* e = edges[next[index]];
-		/*TODO: Fix for set of strings*/
-		int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
-		for (int j = (e->startIndex + 1); j <= end; j++)
-		{
-			i++;
-			if(str[i] == '\0')
-				return 1;
-
-			if(str[i] != text[j])
-				return 0;
-		}
-		n = nodes[e->nodeIndex];
-	}
-	/*TODO*/
-	/*if(str[i] == '\0')
-		return 1;
-	else
-		return 0;*/
-	return 1;
-}
-
-void TestResult()
-{
-	char *tests[] = { "co", "oco", "oa","oY"};
-	for (int i = 0; i < 4; i++)
-	{
-		char* substring = tests[i];
-		if(FindSubstring(substring) == 1)
-			printf("Match!");
-		else
-			printf("There was no match!");	
-	}
-}
+//int FindSubstring(char* str)
+//{
+//	/*Start search from the root node.*/
+//	Node* n = nodes[1];
+//	for (int i = 0; str[i] != '\0'; i++)
+//	{
+//		int index = n->baseAddress + ((int) str[i]) - asciiStartIndex;
+//		if(check[index] != n->arrayIndex)
+//			return 0;
+//		Edge* e = edges[next[index]];
+//		/*TODO: Fix for set of strings*/
+//		int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
+//		for (int j = (e->startIndex + 1); j <= end; j++)
+//		{
+//			i++;
+//			if(str[i] == '\0')
+//				return 1;
+//
+//			if(str[i] != text[j])
+//				return 0;
+//		}
+//		n = nodes[e->nodeIndex];
+//	}
+//	/*TODO*/
+//	/*if(str[i] == '\0')
+//		return 1;
+//	else
+//		return 0;*/
+//	return 1;
+//}
+//
+//void TestResult()
+//{
+//	char *tests[] = { "co", "oco", "oa","oY"};
+//	for (int i = 0; i < 4; i++)
+//	{
+//		char* substring = tests[i];
+//		if(FindSubstring(substring) == 1)
+//			printf("Match!");
+//		else
+//			printf("There was no match!");	
+//	}
+//}
 
 void PrintTree()
 {
@@ -399,7 +438,7 @@ void PrintTree()
 			NodeEdge* ne = nodeEdges[index];
 			printf("%c ", ne->symbol);
 			Edge* e = edges[ne->edgeIndex];
-			int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
+			int end = n->isLeaf == 1 ? words[n->stringIndex] : e->endIndex;
 			printf("[%d, %d]", e->startIndex, end);
 			printf(" End node: '%d'", e->nodeIndex);
 			printf("\n");
@@ -425,8 +464,8 @@ void PrintCompressedTable()
 int main(int argc, char *argv[])
 {
 	InitTree();
-	text = "cocoa";
-	text = "abcabxabcd";
+	text = "COCOA";
+	//text = "ABCABXABCD";
 	ConstructSTree(text);
 	PrintTree();
 	/*Optimistically assume we'll only need as many slots in the compressed table,
