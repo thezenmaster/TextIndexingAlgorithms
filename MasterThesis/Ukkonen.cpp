@@ -58,6 +58,7 @@ Edge *CreateNewEdge(int startIndex, int nodeIndex);
 void Canonize(Node *n, int *k, int p);
 Node* UpdateTree(Node *s, int *k, int p, char c, int stringIndex);
 int SplitEdge(Node *s, int k, int p, int stringIndex);
+char* GetInputAsString();
 
 void InitTree()
 {
@@ -461,12 +462,30 @@ void PrintCompressedTable()
 	}
 }
 
+char* GetInputAsString()
+{
+	FILE* inputFile = fopen("./Sample.txt", "rb");
+	assert(inputFile != NULL);
+	long inputFileSize;
+	fseek(inputFile, 0, SEEK_END);
+	inputFileSize = ftell(inputFile);
+	rewind(inputFile);
+
+	/*In case the file does not end with \0*/
+	char *input = (char*) malloc((inputFileSize + 1) * (sizeof(char)));
+	fread(input, sizeof(char), inputFileSize, inputFile);
+	fclose(inputFile);
+	input[inputFileSize] = '\0';
+
+	return input;
+}
+
 int main(int argc, char *argv[])
 {
 	InitTree();
-	text = "COCOA";
+	//text = "COCOA";
 	//text = "ABCABXABCD";
-	ConstructSTree(text);
+	ConstructSTree(GetInputAsString());
 	PrintTree();
 	/*Optimistically assume we'll only need as many slots in the compressed table,
 	as the count of edges in the tree.*/
