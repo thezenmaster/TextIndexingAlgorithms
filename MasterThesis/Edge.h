@@ -5,7 +5,7 @@ struct Edge {
 	int arrayIndex;
 	int startIndex;
 	int endIndex;
-	int nodeIndex;
+	int endNodeIndex;
 };
 typedef struct Edge Edge;
 

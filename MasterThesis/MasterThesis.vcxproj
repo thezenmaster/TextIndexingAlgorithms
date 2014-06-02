@@ -78,6 +78,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+    <Text Include="Sample.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CompressedTransitionTable.h" />

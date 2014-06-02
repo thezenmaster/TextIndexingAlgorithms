@@ -46,7 +46,7 @@ int compressedTableLength;
 const int alphabetSize = 95;
 int initVal = -1;
 void InitTree();
-void ConstructSTree(char* str);
+void ConstructSTree();
 int CheckEdgeExist(Node *node, char c, int *index);
 void SetEdge(Node *n, char c, int val);
 int CheckSuffixExist(int index);
@@ -208,42 +208,45 @@ void Canonize(Node **n, int *k, int p)
 	int edgeIndex = 0;
 	CheckEdgeExist(*n, text[(*k)], &edgeIndex);
 	Edge *e = edges[edgeIndex];
+	Node *endNode = nodes[e->endNodeIndex];
 
 	int start = e->startIndex;
 	//Is this a leaf?	
-	int end = (*n)->isLeaf == 1 ? words[(*n)->stringIndex] : e->endIndex;
+	//TODO: Set StringIndex properly.
+	int end = endNode->isLeaf == 1 ? words[(*n)->stringIndex] : e->endIndex;
 
 	//TODO: Fix loop.
 	while((end - start) <= (p - (*k)))
 	{
  		*k = (*k) + end - start + 1;
-		(*n) = nodes[e->nodeIndex];
+		(*n) = nodes[e->endNodeIndex];
 		if(*k <= p)
 		{
 			CheckEdgeExist(*n, text[(*k)], &edgeIndex);
 			e = edges[edgeIndex];
+			endNode = nodes[e->endNodeIndex];
 			start = e->startIndex;
-			end = (*n)->isLeaf == 1 ? words[(*n)->stringIndex] : e->endIndex;
+			end = endNode->isLeaf == 1 ? words[(*n)->stringIndex] : e->endIndex;
 		}
 	}
 }
 
-void ConstructSTree(char* str)
+void ConstructSTree()
 {
 	Node* s = nodes[root];
 	int k = 0;
 	int stringIndex=0;
 
-	for (int i = 0; str[i] != '\0'; i++)
+	for (int i = 0; text[i] != '\0'; i++)
 	{
-		char c = str[i];
+		char c = text[i];
 		/*The current word has ended, and a new one begins.
 		Move the active point to the root node.*/
 		if(c == ' ' || c == '\n')
 		{
 			/*Insert a terminal character*/
 			c = '$';
-			str[i] = '$';
+			text[i] = '$';
 			s = nodes[root];
 			k = i;
 		}
@@ -277,11 +280,12 @@ int SplitEdge(Node *s, int k, int p, int stringIndex)
 
 	/*let (s, (k', p'), s') be the w[k]-edge from s*/
 	Edge *e = edges[edgeIndex];
+	Node *endNode = nodes[e->endNodeIndex];
 	//k'
 	int start = e->startIndex;
 	//p'
-	int end = s->isLeaf == 1 ? words[s->stringIndex] : e->endIndex;
-	int endNodeIndex = e->nodeIndex;
+	int end = endNode->isLeaf == 1 ? words[s->stringIndex] : e->endIndex;
+	int endNodeIndex = e->endNodeIndex;
 
 	/*Create an internal (transition) node*/
 	Node *r = CreateNewNode(stringIndex, 0);
@@ -289,7 +293,7 @@ int SplitEdge(Node *s, int k, int p, int stringIndex)
 	/*(s, (k', k' + p - k, r)*/
 	e->endIndex = start + p - k;
 	//e->isLeaf = 0;
-	e->nodeIndex = r->arrayIndex;
+	e->endNodeIndex = r->arrayIndex;
 
 	/*(r, (k' + p - k +1, p'), s')*/
 	int newStart = start + p - k + 1;
@@ -383,50 +387,6 @@ Node* UpdateTree(Node *s, int *k, int p, char c, int stringIndex)
 	return s;
 }
 
-//int FindSubstring(char* str)
-//{
-//	/*Start search from the root node.*/
-//	Node* n = nodes[1];
-//	for (int i = 0; str[i] != '\0'; i++)
-//	{
-//		int index = n->baseAddress + ((int) str[i]) - asciiStartIndex;
-//		if(check[index] != n->arrayIndex)
-//			return 0;
-//		Edge* e = edges[next[index]];
-//		/*TODO: Fix for set of strings*/
-//		int end = e->isLeaf == 1 ? currentEnd : e->endIndex;
-//		for (int j = (e->startIndex + 1); j <= end; j++)
-//		{
-//			i++;
-//			if(str[i] == '\0')
-//				return 1;
-//
-//			if(str[i] != text[j])
-//				return 0;
-//		}
-//		n = nodes[e->nodeIndex];
-//	}
-//	/*TODO*/
-//	/*if(str[i] == '\0')
-//		return 1;
-//	else
-//		return 0;*/
-//	return 1;
-//}
-//
-//void TestResult()
-//{
-//	char *tests[] = { "co", "oco", "oa","oY"};
-//	for (int i = 0; i < 4; i++)
-//	{
-//		char* substring = tests[i];
-//		if(FindSubstring(substring) == 1)
-//			printf("Match!");
-//		else
-//			printf("There was no match!");	
-//	}
-//}
-
 void PrintTree()
 {
 	for (int i = 1; i < freeNodeIndex; i++)
@@ -439,9 +399,10 @@ void PrintTree()
 			NodeEdge* ne = nodeEdges[index];
 			printf("%c ", ne->symbol);
 			Edge* e = edges[ne->edgeIndex];
-			int end = n->isLeaf == 1 ? words[n->stringIndex] : e->endIndex;
+			Node *endNode = nodes[e->endNodeIndex];
+			int end = endNode->isLeaf == 1 ? words[n->stringIndex] : e->endIndex;
 			printf("[%d, %d]", e->startIndex, end);
-			printf(" End node: '%d'", e->nodeIndex);
+			printf(" End node: '%d'", e->endNodeIndex);
 			printf("\n");
 			index = ne->nextElement;
 		}
@@ -456,7 +417,7 @@ void PrintCompressedTable()
 		if(check[i] != 0)
 		{
 			Edge* e = edges[next[i]];
-			printf(" '%c' -> %d", text[e->startIndex], e->nodeIndex);
+			printf(" '%c' -> %d", text[e->startIndex], e->endNodeIndex);
 		}
 		printf("\n");
 	}
@@ -472,12 +433,12 @@ char* GetInputAsString()
 	rewind(inputFile);
 
 	/*In case the file does not end with \0*/
-	char *input = (char*) malloc((inputFileSize + 1) * (sizeof(char)));
-	fread(input, sizeof(char), inputFileSize, inputFile);
+	text = (char*) malloc((inputFileSize + 1) * (sizeof(char)));
+	fread(text, sizeof(char), inputFileSize, inputFile);
 	fclose(inputFile);
-	input[inputFileSize] = '\0';
+	text[inputFileSize] = '\0';
 
-	return input;
+	return text;
 }
 
 int main(int argc, char *argv[])
@@ -485,7 +446,8 @@ int main(int argc, char *argv[])
 	InitTree();
 	//text = "COCOA";
 	//text = "ABCABXABCD";
-	ConstructSTree(GetInputAsString());
+	GetInputAsString();
+	ConstructSTree();
 	PrintTree();
 	/*Optimistically assume we'll only need as many slots in the compressed table,
 	as the count of edges in the tree.*/

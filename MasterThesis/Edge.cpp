@@ -10,7 +10,7 @@ Edge *Edge_Create(int arrayIndex, int startIndex, int nodeIndex)
 	edge->startIndex = startIndex;
 	/*-1 indicates the edge is open.*/
 	edge->endIndex = -1;
-	edge->nodeIndex = nodeIndex;
+	edge->endNodeIndex = nodeIndex;
 
 	return edge;
 }
