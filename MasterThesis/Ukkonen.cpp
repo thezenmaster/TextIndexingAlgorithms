@@ -213,7 +213,7 @@ void Canonize(Node **n, int *k, int p)
 	int start = e->startIndex;
 	//Is this a leaf?	
 	//TODO: Set StringIndex properly.
-	int end = endNode->isLeaf == 1 ? words[(*n)->stringIndex] : e->endIndex;
+	int end = endNode->isLeaf == 1 ? words[endNode->stringIndex] : e->endIndex;
 
 	//TODO: Fix loop.
 	while((end - start) <= (p - (*k)))
@@ -226,7 +226,7 @@ void Canonize(Node **n, int *k, int p)
 			e = edges[edgeIndex];
 			endNode = nodes[e->endNodeIndex];
 			start = e->startIndex;
-			end = endNode->isLeaf == 1 ? words[(*n)->stringIndex] : e->endIndex;
+			end = endNode->isLeaf == 1 ? words[endNode->stringIndex] : e->endIndex;
 		}
 	}
 }
@@ -284,7 +284,7 @@ int SplitEdge(Node *s, int k, int p, int stringIndex)
 	//k'
 	int start = e->startIndex;
 	//p'
-	int end = endNode->isLeaf == 1 ? words[s->stringIndex] : e->endIndex;
+	int end = endNode->isLeaf == 1 ? words[endNode->stringIndex] : e->endIndex;
 	int endNodeIndex = e->endNodeIndex;
 
 	/*Create an internal (transition) node*/
@@ -400,7 +400,7 @@ void PrintTree()
 			printf("%c ", ne->symbol);
 			Edge* e = edges[ne->edgeIndex];
 			Node *endNode = nodes[e->endNodeIndex];
-			int end = endNode->isLeaf == 1 ? words[n->stringIndex] : e->endIndex;
+			int end = endNode->isLeaf == 1 ? words[endNode->stringIndex] : e->endIndex;
 			printf("[%d, %d]", e->startIndex, end);
 			printf(" End node: '%d'", e->endNodeIndex);
 			printf("\n");
