@@ -242,7 +242,7 @@ void ConstructSTree()
 		char c = text[i];
 		/*The current word has ended, and a new one begins.
 		Move the active point to the root node.*/
-		if(c == ' ' || c == '\n')
+		if(c == ' ' || c == '\n' || c == '\r')
 		{
 			/*Insert a terminal character*/
 			c = '$';
@@ -292,6 +292,9 @@ int SplitEdge(Node *s, int k, int p, int stringIndex)
 
 	/*(s, (k', k' + p - k, r)*/
 	e->endIndex = start + p - k;
+	if(e->endIndex<0){
+		int a=5;
+	}
 	//e->isLeaf = 0;
 	e->endNodeIndex = r->arrayIndex;
 
@@ -425,7 +428,7 @@ void PrintCompressedTable()
 
 char* GetInputAsString()
 {
-	FILE* inputFile = fopen("./Sample.txt", "rb");
+	FILE* inputFile = fopen("./Sample2.txt", "rb");
 	assert(inputFile != NULL);
 	long inputFileSize;
 	fseek(inputFile, 0, SEEK_END);
