@@ -240,15 +240,13 @@ void ConstructSTree()
 	for (int i = 0; text[i] != '\0'; i++)
 	{
 		char c = text[i];
-		/*The current word has ended, and a new one begins.
-		Move the active point to the root node.*/
+		
 		if(c == ' ' || c == '\n' || c == '\r')
 		{
-			/*Insert a terminal character*/
+			/*Insert a terminal character
+			and call Update to complete the suffix tree for the current word.*/
 			c = '$';
 			text[i] = '$';
-			s = nodes[root];
-			k = i;
 		}
 		currentEnd = i;
 
@@ -351,9 +349,17 @@ Node* UpdateTree(Node *s, int *k, int p, char c, int stringIndex)
 	/*(s, (k, p-1)) is the canonical reference pair for the active point*/
 	
 	Node *oldr = NULL;
-	
+
 	while(!CheckEndPoint(s, *k, p - 1, c))
 	{
+		/*The active point has reached the root. 
+		No need to add a branch from the root for the terminal character.*/
+		if((s->arrayIndex==root) && (c == '$') && ((*k) >= p))
+		{
+			/*When we start the new word, k will be equal to p*/
+			*k = p + 1;
+			return nodes[root];
+		}
 		Node *r = NULL;
 		/*implicit case*/
 		if(*k <= (p-1))
